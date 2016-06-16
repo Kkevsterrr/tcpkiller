@@ -104,14 +104,13 @@ def ignore_packet(packet):
     pass
 
 def send(packet):
-    s.send(packet)
+    socket.send(packet)
 
 def build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq):
     eth = Ether(src=src_mac, dst=dst_mac, type=0x800)
     ip = IP(src=src_ip, dst=dst_ip)
     tcp = TCP(sport=src_port, dport=dst_port, seq=seq, flags="R")
-    return (eth/ip/tcp)
-send(build_packet("aa:bb:cc:dd:ee:ff", "aa:bb:cc:dd:ee:ff", "10.10.0.1", "10.10.0.1", 124, 1241, 4))
+    return str(eth/ip/tcp)
 
 ###############################################################
 # Scapy                                                       #
@@ -123,11 +122,11 @@ def callback(packet):
     #    pass
 
 socket = socket(PF_PACKET, SOCK_RAW)
-s.bind((iface, 0))
+socket.bind((iface, 0))
+for i in range(0,100):
+    send(build_packet("aa:bb:cc:dd:ee:ff", "aa:bb:cc:dd:ee:ff", "1.1.1.1", "1.1.1.1", 124, 1241, 4))
 
+#conf.sniff_promisc = True
+#sniff(filter='tcp', prn=callback, store=0)
 
-
-conf.sniff_promisc = True
-sniff(filter='tcp', prn=callback, store=0)
-
-
+socket.close()
