@@ -96,14 +96,15 @@ parser.add_argument('-n', '--noisy', help="sends many more packets to attempt co
 parser.add_argument('-r', '--randomize', help="target only SOME of the matching packets for increased stealthiness", choices=["often", "half", "seldom", "all"], default="all")
 parser.add_argument('-v', '--verbose', help="verbose output", default=False, action="store_true")
 
+
+args = vars(parser.parse_args())
+validate_args(args)
+
 if __name__ == "__main__":
     if os.getuid()!=0:
         print "error: not running as root."
         parser.print_usage()
         sys.exit()
-
-args = vars(parser.parse_args())
-validate_args(args)
 
 iface = args["interface"]
 verbose = args["verbose"]
