@@ -2,7 +2,7 @@
 
 tcpkiller is a utility to kill all TCP connections on a network. It works by intercepting network traffic, and forging RST packets of existing connections to cause hangups. Currently, it only works for IPv4 connections, but IPv6 support is on the way. 
 
-tcpkiller is a sneaky way to kill network connections. Any targeted system will appear to work when examined through typical diagnostics - DNS will resolve, ICMP's will go through, and the network card will be able to connect to the network, but no TCP connections will be able to by sustained. The current implementation is on the noiser side to ensure effectiveness, but a stealth option is on the way. 
+tcpkiller is a sneaky way to kill network connections. Any targeted system will appear to work when examined through typical diagnostics - DNS will resolve, ICMP's will go through, and the network card will be able to connect to the network- but no TCP connections will be sustained. 
 
 Currently, tcpkiller only supports Ethernet/wired systems, in which tcpkiller's effectiveness is mitigated somewhat, as the system does not receive all of the packets of a network. Once testing has been completed on wireless systems, it can kill every TCP connection going over an access point.
 
