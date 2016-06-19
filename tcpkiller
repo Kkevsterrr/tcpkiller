@@ -93,7 +93,7 @@ parser.add_argument('-p', '--target-port', nargs="*", help="actively target any 
 parser.add_argument('-ps', '--target-source-port', nargs="*", help="actively target any connections involving this port, but only if it's the source",metavar='')
 parser.add_argument('-pd', '--target-destination-port', nargs="*", help="actively target any connections involving this port, but only if it's the destination of a packet",metavar='')
 parser.add_argument('-n', '--noisy', help="sends many more packets to attempt connection resets to increase effectiveness", default=False, action="store_true")
-parser.add_argument('-r', '--randomize', help="target only SOME of the matching packets for increased stealthiness", choices=["often", "half", "seldom", "all"], default="all")
+parser.add_argument('-r', '--randomize', help="target only SOME of the matching packets for increased stealthiness. defaults to \"all\"", choices=["often", "half", "seldom", "all"], default="all")
 parser.add_argument('-v', '--verbose', help="verbose output", default=False, action="store_true")
 
 
