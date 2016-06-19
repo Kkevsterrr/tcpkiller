@@ -30,12 +30,17 @@ def validate_ips(ips):
             ips += filter(None, ip.split(","))
         else:
             try:
-                socket.inet_aton(ip)
+                if ":" in ip:
+                    socket.inet_pton(socket.AF_INET6, ip)
+                else:
+                    socket.inet_pton(socket.AF_INET, ip)
+                if not ip in clean: 
+                    clean.append(ip)
             except Exception as e:
                 print e
                 print("error: invalid ip address \"%s\", exiting." % ip)
                 return None
-        clean.append(ip)
+        
     return clean
 
 def is_int(s):
@@ -69,8 +74,16 @@ def validate_args(args):
     for arg in ["allow_port", "allow_source_port", "allow_destination_port", "target_port", "target_source_port", "target_destination_port"]: 
         if arg in args and args[arg] != None and not validate_ports(args[arg]):
             args_error()
-    #if args["iface"] == None:
-        
+ 
+def print_inits(action, engage, targets, typ):
+    if targets:
+        if typ == "IP":
+            print("[*] %s all connections %s %s." % (action, engage, ", ".join(targets)))
+        else:
+            print("[*] %s all connections %sover port%s %s." %(action, engage, ("" if len(targets) == 1 else "s"), ", ".join(targets)))
+
+
+
 VERBOSE = False
 allow = allow_source = allow_destination = []
 target = target_source = target_destination = []
@@ -126,33 +139,20 @@ target_sport = validate_ports(args["target_source_port"])
 target_dport = validate_ports(args["target_destination_port"])
 
 print("[*] Initialized tcpkiller on %s in %s mode, targeting %s%s. Press Ctrl-C to exit." %(iface, ("noisy" if noisy else "quiet"),(args["randomize"]), (" with verbosity enabled" if verbose else "")))
-if allow:
-    print("[*] Allowing all connections involving " + ", ".join(allow))
-if allow_src:
-    print("[*] Allowing all connections originating from " + ", ".join(allow_src))
-if allow_dst:
-    print("[*] Allowing all connections coming from " + ", ".join(allow_dst))
 
-if target:
-    print("[*] Targeting all connections involving " + ", ".join(target))
-if target_src:
-    print("[*] Targeting all connections originating from " + ", ".join(target_src))
-if target_dst:
-    print("[*] Targeting all connections coming from " + ", ".join(target_dst))
+print_inits("Allowing", "involving", allow, "IP")
+print_inits("Allowing", "originating from", allow_src, "IP")
+print_inits("Allowing", "coming from", allow_dst, "IP")
+print_inits("Targeting", "involving", target, "IP")
+print_inits("Targeting", "originating from", target_src, "IP")
+print_inits("Targeting", "coming from", target_dst, "IP")
 
-if allow_ports:
-    print("[*] Allowing all connections involving " + ", ".join(allow_ports))
-if allow_sport:
-    print("[*] Allowing all connections originating from " + ", ".join(allow_sport))
-if allow_dport:
-    print("[*] Allowing all connections coming from " + ", ".join(allow_dport))
-
-if target_ports:
-    print("[*] Targeting all connections involving " + ", ".join(target_ports))
-if target_sport:
-    print("[*] Targeting all connections originating from " + ", ".join(target_sport))
-if target_dport:
-    print("[*] Targeting all connections coming from " + ", ".join(target_dport))
+print_inits("Allowing", "", allow_ports, "port")
+print_inits("Allowing", "originating from", allow_sport, "port")
+print_inits("Allowing", "coming from", allow_dport, "port")
+print_inits("Targeting", "", target_ports, "port")
+print_inits("Targeting", "originating from", target_sport, "port")
+print_inits("Targeting", "coming from", target_dport, "port")
 
 
 ###############################################################
