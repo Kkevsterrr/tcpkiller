@@ -47,6 +47,7 @@ To setup tcpkiller:
 ```
 $ git clone https://github.com/Kkevsterrr/tcpkiller && cd tcpkiller
 $ sudo chmod +x tcpkiller
+$ sudo ifconfig <interface> promisc
 $ ./tcpkiller -i <interface>
 ...
 ```
