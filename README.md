@@ -10,12 +10,25 @@ Note that tcpkiller's effectiveness is mitigated somewhat on ethernet/wired syst
 
 ```
 $ ./tcpkiller -i eth0
-[*] Initialized tcpkiller
+[*] Initialized tcpkiller on eth0 in quiet mode, targeting all. Press Ctrl-C to exit.
 ...
 ```
 
 ### Options:
-
+ - ```-a, --allow``` do not attack this ip address's connections, whether it's the source or destination of a packet
+ - ```-as,  --allow-source``` do not attack this ip address's connections, but only if it's the source of a packet
+ - ```-ad, --allow-destination```do not attack this ip address's connections, but only if it's the destination of a packet
+ - ```-t, --target``` actively target given ip address, whether it is the source or destination of a packet (and allow all other connections)
+ - ```-ts, --target-source``` actively target this ip address, but only if it's the source
+ - ```-td, --target-destination``` actively target this ip address, but only if it's the destination of a packet
+ - ```-o, --allow-port``` do not attack any connections involving this port, whether it's the source or destination of a packet
+ - ```-os, --allow-source-port``` do not attack any connections involving this port, but only if it's the source of a packet
+ - ```-od, --allow-destination-port``` do not attack any connections involving this port, but only if it's the destination of a packet
+ - ```-p, --target-port``` actively target any connections involving these ports whether it is the source or destination of a packet (and allow all other connections)
+ - ```-ps, --target-source-port``` actively target any connections involving this port, but only if it's the source
+ - ```-pd, --target-destination-port``` actively target any connections involving this port, but only if it's the destination of a packet
+ - ```-n, --noisy``` sends many more packets to attempt connection resets to increase effectiveness [usually unnecessary]
+ - ```-r, --randomize {often,half,seldom,all}``` target only SOME of the matching packets for increased stealthiness. defaults to "all"
  - ```-i, --interface``` specify interface to listen on 
  - ```-v, --verbose``` verbose output
  - ```-h, --help``` prints usage and help menu
