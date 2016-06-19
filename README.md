@@ -4,7 +4,7 @@ tcpkiller is a utility to kill all TCP connections on a network. It works by int
 
 tcpkiller is a sneaky way to kill network connections. Any targeted system will appear to work when examined through typical diagnostics - DNS will resolve, ICMP's will go through, and the network card will be able to connect to the network- but no TCP connections will be sustained. 
 
-Currently, tcpkiller only supports Ethernet/wired systems, in which tcpkiller's effectiveness is mitigated somewhat, as the system does not receive all of the packets of a network. Once testing has been completed on wireless systems, it can kill every TCP connection going over an access point.
+Currently, tcpkiller only supports Ethernet/wired systems, in which it's effectiveness is somewhat mitigated, as it may not see all of the packets on a network. Once testing has been completed on wireless systems and 802.11 is supported, it will kill every TCP connection going over an access point.
 
 ## Usage:
 
