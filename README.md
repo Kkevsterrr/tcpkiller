@@ -27,7 +27,7 @@ $ ./tcpkiller -i eth0
  - ```-p, --target-port``` actively target any connections involving these ports whether it is the source or destination of a packet (and allow all other connections)
  - ```-ps, --target-source-port``` actively target any connections involving this port, but only if it's the source
  - ```-pd, --target-destination-port``` actively target any connections involving this port, but only if it's the destination of a packet
- - ```-n, --noisy``` sends many more packets to attempt connection resets to increase effectiveness [usually unnecessary]
+ - ```-n, --noisy``` sends many more packets to attempt connection resets to increase effectiveness [this is usually unnecessary]
  - ```-r, --randomize {often,half,seldom,all}``` target only SOME of the matching packets for increased stealthiness. defaults to "all"
  - ```-i, --interface``` specify interface to listen on 
  - ```-v, --verbose``` verbose output
