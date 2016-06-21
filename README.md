@@ -28,6 +28,7 @@ $ ./tcpkiller -i eth0
  - ```-n, --noisy``` sends many more packets to attempt connection resets to increase effectiveness [this is usually unnecessary]
  - ```-r, --randomize {often,half,seldom,all}``` target only SOME of the matching packets for increased stealthiness. defaults to "all"
  - ```-i, --interface``` specify interface to listen on 
+ - ```-s, --silent``` silences all terminal output
  - ```-v, --verbose``` verbose output
  - ```-h, --help``` prints usage and help menu
 
