@@ -106,6 +106,7 @@ parser.add_argument('-p', '--target-port', nargs="*", help="actively target any 
 parser.add_argument('-ps', '--target-source-port', nargs="*", help="actively target any connections involving this port, but only if it's the source",metavar='')
 parser.add_argument('-pd', '--target-destination-port', nargs="*", help="actively target any connections involving this port, but only if it's the destination of a packet",metavar='')
 parser.add_argument('-n', '--noisy', help="sends many more packets to attempt connection resets to increase effectiveness", default=False, action="store_true")
+parser.add_argument('-s', '--silent', help="silence all terminal output", default=False, action="store_true")
 parser.add_argument('-r', '--randomize', help="target only SOME of the matching packets for increased stealthiness. defaults to \"all\"", choices=["often", "half", "seldom", "all"], default="all")
 parser.add_argument('-v', '--verbose', help="verbose output", default=False, action="store_true")
 
@@ -122,6 +123,7 @@ if __name__ == "__main__":
 iface = args["interface"]
 verbose = args["verbose"]
 noisy = args["noisy"]
+silent = args["silent"]
 randomize = args["randomize"]
 
 allow = validate_ips(args["allow"])
@@ -138,21 +140,22 @@ target_ports = validate_ports(args["target_port"])
 target_sport = validate_ports(args["target_source_port"])
 target_dport = validate_ports(args["target_destination_port"])
 
-print("[*] Initialized tcpkiller on %s in %s mode, targeting %s%s. Press Ctrl-C to exit." %(iface, ("noisy" if noisy else "quiet"),(args["randomize"]), (" with verbosity enabled" if verbose else "")))
+if not silent: 
+    print("[*] Initialized tcpkiller on %s in %s mode, targeting %s%s. Press Ctrl-C to exit." %(iface, ("noisy" if noisy else "quiet"),(args["randomize"]), (" with verbosity enabled" if verbose else "")))
 
-print_inits("Allowing", "involving", allow, "IP")
-print_inits("Allowing", "originating from", allow_src, "IP")
-print_inits("Allowing", "coming from", allow_dst, "IP")
-print_inits("Targeting", "involving", target, "IP")
-print_inits("Targeting", "originating from", target_src, "IP")
-print_inits("Targeting", "coming from", target_dst, "IP")
+    print_inits("Allowing", "involving", allow, "IP")
+    print_inits("Allowing", "originating from", allow_src, "IP")
+    print_inits("Allowing", "coming from", allow_dst, "IP")
+    print_inits("Targeting", "involving", target, "IP")
+    print_inits("Targeting", "originating from", target_src, "IP")
+    print_inits("Targeting", "coming from", target_dst, "IP")
 
-print_inits("Allowing", "", allow_ports, "port")
-print_inits("Allowing", "originating from", allow_sport, "port")
-print_inits("Allowing", "coming from", allow_dport, "port")
-print_inits("Targeting", "", target_ports, "port")
-print_inits("Targeting", "originating from", target_sport, "port")
-print_inits("Targeting", "coming from", target_dport, "port")
+    print_inits("Allowing", "", allow_ports, "port")
+    print_inits("Allowing", "originating from", allow_sport, "port")
+    print_inits("Allowing", "coming from", allow_dport, "port")
+    print_inits("Targeting", "", target_ports, "port")
+    print_inits("Targeting", "originating from", target_sport, "port")
+    print_inits("Targeting", "coming from", target_dport, "port")
 
 
 ###############################################################
@@ -230,4 +233,4 @@ s = socket.socket(socket.PF_PACKET, socket.SOCK_RAW)
 s.bind((iface, 0))
 
 conf.sniff_promisc = True
-sniff(filter='tcp', prn=callback, store=0)
+sniff(filter='tcp', prn=callback, store=0, promisc=1)
